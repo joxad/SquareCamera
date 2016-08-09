@@ -13,6 +13,7 @@ import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -56,7 +57,8 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback, 
         return new CameraFragment();
     }
 
-    public CameraFragment() {}
+    public CameraFragment() {
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -182,7 +184,7 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback, 
             autoFlashIcon.setText("Auto");
         } else if (Camera.Parameters.FLASH_MODE_ON.equalsIgnoreCase(mFlashMode)) {
             autoFlashIcon.setText("On");
-        }  else if (Camera.Parameters.FLASH_MODE_OFF.equalsIgnoreCase(mFlashMode)) {
+        } else if (Camera.Parameters.FLASH_MODE_OFF.equalsIgnoreCase(mFlashMode)) {
             autoFlashIcon.setText("Off");
         }
     }
@@ -196,7 +198,7 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback, 
         super.onSaveInstanceState(outState);
     }
 
-    private void resizeTopAndBtmCover( final View topCover, final View bottomCover) {
+    private void resizeTopAndBtmCover(final View topCover, final View bottomCover) {
         ResizeAnimation resizeTopAnimation
                 = new ResizeAnimation(topCover, mImageParameters);
         resizeTopAnimation.setDuration(800);
@@ -483,26 +485,25 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback, 
         }
     }
 
+
+    Handler handler = new Handler();
+
     /**
      * A picture has been taken
+     *
      * @param data
      * @param camera
      */
     @Override
-    public void onPictureTaken(byte[] data, Camera camera) {
-        int rotation = getPhotoRotation();
-//        Log.d(TAG, "normal orientation: " + orientation);
-//        Log.d(TAG, "Rotate Picture by: " + rotation);
-        getFragmentManager()
-                .beginTransaction()
-                .replace(
-                        R.id.fragment_container,
-                        EditSavePhotoFragment.newInstance(data, rotation, mImageParameters.createCopy()),
-                        EditSavePhotoFragment.TAG)
-                .addToBackStack(null)
-                .commit();
-
-        setSafeToTakePhoto(true);
+    public void onPictureTaken(final byte[] data, Camera camera) {
+        //TODO
+        restartPreview();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                PictureManager.save(getContext(), data, getPhotoRotation(), mImageParameters.createCopy());
+            }
+        });
     }
 
     private int getPhotoRotation() {
