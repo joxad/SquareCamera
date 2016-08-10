@@ -3,28 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.desmond.squarecamera.CameraFragment">
+    tools:context=".EasyCameraPhotoFragment">
 
     <com.desmond.squarecamera.SquareCameraPreview
         android:id="@+id/camera_preview_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
-
-    <View
-        android:id="@+id/cover_top_view"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/squarecamera__cover_start_height"
-        android:visibility="gone"
-        android:layout_alignTop="@id/camera_preview_view"
-        android:background="@android:color/black"/>
-
-    <View
-        android:id="@+id/cover_bottom_view"
-        android:layout_width="match_parent"
-        android:visibility="gone"
-        android:layout_height="@dimen/squarecamera__cover_start_height"
-        android:layout_alignBottom="@id/camera_preview_view"
-        android:background="@android:color/black"/>
 
     <LinearLayout
         android:id="@+id/camera_tools_view"

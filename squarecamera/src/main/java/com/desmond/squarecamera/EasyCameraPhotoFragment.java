@@ -1,16 +1,13 @@
 package com.desmond.squarecamera;
 
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Size;
 import android.hardware.SensorManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,9 +28,10 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.util.List;
 
-public class CameraFragment extends Fragment implements SurfaceHolder.Callback, Camera.PictureCallback {
+public class EasyCameraPhotoFragment extends Fragment implements SurfaceHolder.Callback, Camera.PictureCallback {
+    Handler handler = new Handler();
 
-    public static final String TAG = CameraFragment.class.getSimpleName();
+    public static final String TAG = EasyCameraPhotoFragment.class.getSimpleName();
     public static final String CAMERA_ID_KEY = "camera_id";
     public static final String CAMERA_FLASH_KEY = "flash_mode";
     public static final String IMAGE_INFO = "image_info";
@@ -54,10 +52,10 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback, 
     private CameraOrientationListener mOrientationListener;
 
     public static Fragment newInstance() {
-        return new CameraFragment();
+        return new EasyCameraPhotoFragment();
     }
 
-    public CameraFragment() {
+    public EasyCameraPhotoFragment() {
     }
 
     @Override
@@ -95,10 +93,7 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback, 
         mOrientationListener.enable();
 
         mPreviewView = (SquareCameraPreview) view.findViewById(R.id.camera_preview_view);
-        mPreviewView.getHolder().addCallback(CameraFragment.this);
-
-        final View topCoverView = view.findViewById(R.id.cover_top_view);
-        final View btnCoverView = view.findViewById(R.id.cover_bottom_view);
+        mPreviewView.getHolder().addCallback(EasyCameraPhotoFragment.this);
 
         mImageParameters.mIsPortrait =
                 getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
@@ -114,10 +109,6 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback, 
                     mImageParameters.mCoverWidth = mImageParameters.mCoverHeight
                             = mImageParameters.calculateCoverWidthHeight();
 
-//                    Log.d(TAG, "parameters: " + mImageParameters.getStringValues());
-//                    Log.d(TAG, "cover height " + topCoverView.getHeight());
-                    resizeTopAndBtmCover(topCoverView, btnCoverView);
-
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                         mPreviewView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                     } else {
@@ -125,14 +116,6 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback, 
                     }
                 }
             });
-        } else {
-            if (mImageParameters.isPortrait()) {
-                topCoverView.getLayoutParams().height = mImageParameters.mCoverHeight;
-                btnCoverView.getLayoutParams().height = mImageParameters.mCoverHeight;
-            } else {
-                topCoverView.getLayoutParams().width = mImageParameters.mCoverWidth;
-                btnCoverView.getLayoutParams().width = mImageParameters.mCoverWidth;
-            }
         }
 
         final ImageView swapCameraBtn = (ImageView) view.findViewById(R.id.change_camera);
@@ -198,19 +181,6 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback, 
         super.onSaveInstanceState(outState);
     }
 
-    private void resizeTopAndBtmCover(final View topCover, final View bottomCover) {
-        ResizeAnimation resizeTopAnimation
-                = new ResizeAnimation(topCover, mImageParameters);
-        resizeTopAnimation.setDuration(800);
-        resizeTopAnimation.setInterpolator(new AccelerateDecelerateInterpolator());
-        topCover.startAnimation(resizeTopAnimation);
-
-        ResizeAnimation resizeBtmAnimation
-                = new ResizeAnimation(bottomCover, mImageParameters);
-        resizeBtmAnimation.setDuration(800);
-        resizeBtmAnimation.setInterpolator(new AccelerateDecelerateInterpolator());
-        bottomCover.startAnimation(resizeBtmAnimation);
-    }
 
     private void getCamera(int cameraID) {
         try {
@@ -471,22 +441,6 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback, 
         // The surface is destroyed with the visibility of the SurfaceView is set to View.Invisible
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode != Activity.RESULT_OK) return;
-
-        switch (requestCode) {
-            case 1:
-                Uri imageUri = data.getData();
-                break;
-
-            default:
-                super.onActivityResult(requestCode, resultCode, data);
-        }
-    }
-
-
-    Handler handler = new Handler();
 
     /**
      * A picture has been taken

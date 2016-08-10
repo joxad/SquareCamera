@@ -8,21 +8,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <View
-        android:id="@+id/cover_top_view"
-        android:layout_width="@dimen/squarecamera__cover_start_width"
-        android:layout_height="match_parent"
-        android:layout_alignLeft="@id/camera_preview_view"
-        android:background="@android:color/black"
-        android:visibility="gone" />
-
-    <View
-        android:id="@+id/cover_bottom_view"
-        android:layout_width="@dimen/squarecamera__cover_start_width"
-        android:layout_height="match_parent"
-        android:layout_alignRight="@id/camera_preview_view"
-        android:background="@android:color/black"
-        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/camera_tools_view"
