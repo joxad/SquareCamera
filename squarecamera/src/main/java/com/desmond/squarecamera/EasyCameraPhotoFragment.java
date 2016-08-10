@@ -92,7 +92,7 @@ public class EasyCameraPhotoFragment extends Fragment implements SurfaceHolder.C
         super.onViewCreated(view, savedInstanceState);
         mOrientationListener.enable();
 
-        mPreviewView = (SquareCameraPreview) view.findViewById(R.id.camera_preview_view);
+   //     mPreviewView = (SquareCameraPreview) view.findViewById(R.id.camera_preview_view);
         mPreviewView.getHolder().addCallback(EasyCameraPhotoFragment.this);
 
         mImageParameters.mIsPortrait =
@@ -455,7 +455,7 @@ public class EasyCameraPhotoFragment extends Fragment implements SurfaceHolder.C
         handler.post(new Runnable() {
             @Override
             public void run() {
-                PictureManager.save(getContext(), data, getPhotoRotation(), mImageParameters.createCopy());
+                PictureManager.save(getContext(), data, getPhotoRotation());
             }
         });
     }

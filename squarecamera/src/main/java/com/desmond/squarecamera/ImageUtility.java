@@ -139,25 +139,25 @@ public class ImageUtility {
 
 
         final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        options.inMutable = true;
-        options.inBitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length, options);
+        //options.inJustDecodeBounds = true;
+       // options.inMutable = true;
+       // options.inBitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length, options);
 
         // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+       // options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
 
         // Load & resize the image to be 1/inSampleSize dimensions
         // Use when you do not want to scale the image with a inSampleSize that is a power of 2
-        options.inScaled = true;
-        options.inDensity = options.outWidth;
-        options.inTargetDensity = reqWidth * options.inSampleSize;
+        //options.inScaled = false;
+       // options.inDensity = options.outWidth;
+      //  options.inTargetDensity = reqWidth * options.inSampleSize;
 
         // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false; // If set to true, the decoder will return null (no bitmap), but the out... fields will still be set, allowing the caller to query the bitmap without having to allocate the memory for its pixels.
+      //  options.inJustDecodeBounds = false; // If set to true, the decoder will return null (no bitmap), but the out... fields will still be set, allowing the caller to query the bitmap without having to allocate the memory for its pixels.
         options.inPurgeable = true;         // Tell to gc that whether it needs free memory, the Bitmap can be cleared
         options.inInputShareable = true;    // Which kind of reference will be used to recover the Bitmap data after being clear, when it will be used in the future
 
-        return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length, options);
+        return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
     }
 
     /**

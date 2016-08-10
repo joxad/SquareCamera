@@ -24,7 +24,7 @@ public class CameraActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.fragment_container, EasyCameraPhotoFragment.newInstance(), EasyCameraPhotoFragment.TAG)
+                    .replace(R.id.fragment_container, NativeCameraFragment.newInstance(), EasyCameraPhotoFragment.TAG)
                     .commit();
         }
     }

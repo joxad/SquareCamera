@@ -1,39 +1,36 @@
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".EasyCameraPhotoFragment">
 
-    <com.desmond.squarecamera.SquareCameraPreview
-        android:id="@+id/camera_preview_view"
+    <FrameLayout
+        android:id="@+id/fl_camera_preview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 
     <LinearLayout
         android:id="@+id/camera_tools_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/camera_preview_view"
         android:layout_alignParentBottom="true"
-        android:padding="10dp"
+        android:gravity="center"
         android:orientation="horizontal"
-        android:background="@android:color/black"
-        android:gravity="center">
+        android:padding="10dp">
 
         <ImageView
             android:id="@+id/change_camera"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:src="@drawable/squarecamera__camera"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:src="@drawable/squarecamera__camera" />
 
         <ImageView
             android:id="@+id/capture_image_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:src="@drawable/squarecamera__capture_photo_button"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:src="@drawable/squarecamera__capture_photo_button" />
 
         <LinearLayout
             android:id="@+id/flash"
@@ -53,12 +50,12 @@
                 android:id="@+id/auto_flash_icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="5dp"
-                android:layout_gravity="center_vertical"
                 android:text="Auto"
                 android:textColor="@android:color/white"
-                android:textSize="14sp"/>
+                android:textSize="14sp" />
 
         </LinearLayout>
 
