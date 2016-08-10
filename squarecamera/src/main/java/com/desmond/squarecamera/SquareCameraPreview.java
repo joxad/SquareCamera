@@ -8,6 +8,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.util.ArrayList;
@@ -47,6 +48,8 @@ public class SquareCameraPreview extends SurfaceView {
     private boolean mIsFocusReady;
     private Camera.Area mFocusArea;
     private ArrayList<Camera.Area> mFocusAreas;
+    private List<Camera.Size> mSupportedPreviewSizes;
+    private Camera.Size mPreviewSize;
 
     public SquareCameraPreview(Context context) {
         super(context);
@@ -68,6 +71,7 @@ public class SquareCameraPreview extends SurfaceView {
         mFocusArea = new Camera.Area(new Rect(), 1000);
         mFocusAreas = new ArrayList<>();
         mFocusAreas.add(mFocusArea);
+
     }
 
     /**
@@ -76,27 +80,60 @@ public class SquareCameraPreview extends SurfaceView {
      */
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int height = MeasureSpec.getSize(heightMeasureSpec);
-        int width = MeasureSpec.getSize(widthMeasureSpec);
+        final int width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
+        final int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
 
-        final boolean isPortrait =
-                getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
+        if (mSupportedPreviewSizes != null) {
+            mPreviewSize = getOptimalPreviewSize(mSupportedPreviewSizes, width, height);
+        }
+        if (mPreviewSize==null)
+            return;
 
-        if (isPortrait) {
-            if (width > height * ASPECT_RATIO) {
-                width = (int) (height * ASPECT_RATIO + 0.5);
-            } else {
-                height = (int) (width / ASPECT_RATIO + 0.5);
-            }
-        } else {
-            if (height > width * ASPECT_RATIO) {
-                height = (int) (width * ASPECT_RATIO + 0.5);
-            } else {
-                width = (int) (height / ASPECT_RATIO + 0.5);
+        float ratio;
+        if(mPreviewSize.height >= mPreviewSize.width)
+            ratio = (float) mPreviewSize.height / (float) mPreviewSize.width;
+        else
+            ratio = (float) mPreviewSize.width / (float) mPreviewSize.height;
+
+        // One of these methods should be used, second method squishes preview slightly
+        setMeasuredDimension(width, (int) (width * ratio));
+//        setMeasuredDimension((int) (width * ratio), height);
+    }
+
+    private Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int w, int h) {
+        final double ASPECT_TOLERANCE = 0.1;
+        double targetRatio = (double) h / w;
+
+        if (sizes == null)
+            return null;
+
+        Camera.Size optimalSize = null;
+        double minDiff = Double.MAX_VALUE;
+
+        int targetHeight = h;
+
+        for (Camera.Size size : sizes) {
+            double ratio = (double) size.height / size.width;
+            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE)
+                continue;
+
+            if (Math.abs(size.height - targetHeight) < minDiff) {
+                optimalSize = size;
+                minDiff = Math.abs(size.height - targetHeight);
             }
         }
 
-        setMeasuredDimension(width, height);
+        if (optimalSize == null) {
+            minDiff = Double.MAX_VALUE;
+            for (Camera.Size size : sizes) {
+                if (Math.abs(size.height - targetHeight) < minDiff) {
+                    optimalSize = size;
+                    minDiff = Math.abs(size.height - targetHeight);
+                }
+            }
+        }
+
+        return optimalSize;
     }
 
     public int getViewWidth() {
@@ -117,6 +154,11 @@ public class SquareCameraPreview extends SurfaceView {
                 mMaxZoom = params.getMaxZoom();
             }
         }
+        // supported preview sizes
+        if (mCamera==null) return;
+        mSupportedPreviewSizes = mCamera.getParameters().getSupportedPreviewSizes();
+        for(Camera.Size str: mSupportedPreviewSizes)
+            Log.e(TAG, str.width + "/" + str.height);
     }
 
     @Override
@@ -217,4 +259,38 @@ public class SquareCameraPreview extends SurfaceView {
             return true;
         }
     }
+
+    public void updateSurface(SurfaceHolder holder, int w, int h) {
+        if (mCamera ==null)
+            return;
+        Log.e(TAG, "surfaceChanged => w=" + w + ", h=" + h);
+        // If your preview can change or rotate, take care of those events here.
+        // Make sure to stop the preview before resizing or reformatting it.
+        if (holder.getSurface() == null) {
+            // preview surface does not exist
+            return;
+        }
+
+        // stop preview before making changes
+        try {
+            mCamera.stopPreview();
+        } catch (Exception e) {
+            // ignore: tried to stop a non-existent preview
+        }
+
+        // set preview size and make any resize, rotate or reformatting changes here
+        // start preview with new settings
+        try {
+            Camera.Parameters parameters = mCamera.getParameters();
+            parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
+            mCamera.setParameters(parameters);
+            mCamera.setDisplayOrientation(90);
+            mCamera.setPreviewDisplay(holder);
+            mCamera.startPreview();
+
+        } catch (Exception e) {
+            Log.d(TAG, "Error starting camera preview: " + e.getMessage());
+        }
+    }
+
 }

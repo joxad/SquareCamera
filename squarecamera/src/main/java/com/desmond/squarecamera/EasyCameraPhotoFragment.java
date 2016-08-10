@@ -21,7 +21,6 @@ import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -408,7 +407,7 @@ public class EasyCameraPhotoFragment extends Fragment implements SurfaceHolder.C
     }
 
     @Override
-    public void onStop() {
+    public void onPause() {
         mOrientationListener.disable();
 
         // stop the preview
@@ -420,25 +419,22 @@ public class EasyCameraPhotoFragment extends Fragment implements SurfaceHolder.C
 
         CameraSettingPreferences.saveCameraFlashMode(getActivity(), mFlashMode);
 
-        super.onStop();
+        super.onPause();
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         mSurfaceHolder = holder;
-
-        getCamera(mCameraID);
-        startCameraPreview();
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
+        mPreviewView.updateSurface( holder, width, height);
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        // The surface is destroyed with the visibility of the SurfaceView is set to View.Invisible
+
     }
 
 

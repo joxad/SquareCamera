@@ -13,9 +13,9 @@
     <LinearLayout
         android:id="@+id/camera_tools_view"
         android:layout_width="match_parent"
+        android:layout_centerInParent="true"
         android:layout_height="wrap_content"
         android:layout_below="@id/camera_preview_view"
-        android:layout_alignParentBottom="true"
         android:padding="10dp"
         android:orientation="horizontal"
         android:background="@android:color/black"
