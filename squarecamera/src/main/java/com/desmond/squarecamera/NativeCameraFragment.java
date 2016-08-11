@@ -3,7 +3,6 @@ package com.desmond.squarecamera;
 import android.content.Context;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -16,14 +15,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 public class NativeCameraFragment extends Fragment {
@@ -157,7 +150,7 @@ public class NativeCameraFragment extends Fragment {
     /**
      * Surface on which the camera projects it's capture results. This is derived both from Google's docs and the
      * excellent StackOverflow answer provided below.
-     * <p>
+     * <p/>
      * Reference / Credit: http://stackoverflow.com/questions/7942378/android-camera-will-not-work-startpreview-fails
      */
     class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
@@ -440,37 +433,9 @@ public class NativeCameraFragment extends Fragment {
                     PictureManager.save(getContext(), data, degrees);
                 }
             });
-
-
-            safeCameraOpenInView(mCameraView);
-
+            camera.startPreview();
         }
     };
 
-    /**
-     * Used to return the camera File output.
-     *
-     * @return
-     */
-    private File getOutputMediaFile() {
 
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "UltimateCameraGuideApp");
-
-        if (!mediaStorageDir.exists()) {
-            if (!mediaStorageDir.mkdirs()) {
-                Log.d("Camera Guide", "Required media storage does not exist");
-                return null;
-            }
-        }
-
-        // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        File mediaFile;
-        mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                "IMG_" + timeStamp + ".jpg");
-
-
-        return mediaFile;
-    }
 }
