@@ -31,7 +31,7 @@
                 android:id="@+id/flash_icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/squarecamera__toggle_flash" />
+                android:src="@drawable/easycamera__toggle_flash" />
 
             <TextView
                 android:id="@+id/auto_flash_icon"
@@ -51,14 +51,14 @@
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:src="@drawable/squarecamera__capture_photo_button" />
+            android:src="@drawable/easycamera__capture_photo_button" />
 
         <ImageView
             android:id="@+id/change_camera"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:src="@drawable/squarecamera__camera" />
+            android:src="@drawable/easycamera__camera" />
 
 
     </LinearLayout>

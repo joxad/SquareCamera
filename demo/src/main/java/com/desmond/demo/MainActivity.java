@@ -51,8 +51,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void requestForCameraPermission(View view) {
+
         final String permission = Manifest.permission.CAMERA;
-        if (ContextCompat.checkSelfPermission(MainActivity.this, permission)
+        if (ContextCompat.checkSelfPermission(MainActivity.this,permission)
                 != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, permission)) {
                 showPermissionRationaleDialog("Test", permission);

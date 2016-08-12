@@ -40,11 +40,11 @@ public class ImageUtility {
     public static Bitmap rotatePicture(Context context, int rotation, byte[] data) {
         Bitmap bitmap = decodeSampledBitmapFromByte(context, data);
 
-        if (rotation != 0) {
+        if (rotation == 0) {
             Bitmap oldBitmap = bitmap;
 
             Matrix matrix = new Matrix();
-            matrix.postRotate(rotation);
+            matrix.postRotate(90);
 
             bitmap = Bitmap.createBitmap(
                     oldBitmap, 0, 0, oldBitmap.getWidth(), oldBitmap.getHeight(), matrix, false
@@ -57,15 +57,10 @@ public class ImageUtility {
     }
 
     public static Uri savePicture(Context context, Bitmap bitmap) {
-        int cropHeight;
-        if (bitmap.getHeight() > bitmap.getWidth()) cropHeight = bitmap.getWidth();
-        else                                        cropHeight = bitmap.getHeight();
-
-        bitmap = ThumbnailUtils.extractThumbnail(bitmap, cropHeight, cropHeight, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
 
         File mediaStorageDir = new File(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                context.getString(R.string.squarecamera__app_name)
+                context.getString(R.string.easycamera__app_name)
         );
 
         if (!mediaStorageDir.exists()) {

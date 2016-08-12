@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import com.desmond.squarecamera.camera1.NativeCameraFragment;
+
 
 public class CameraActivity extends AppCompatActivity {
 
@@ -13,18 +15,18 @@ public class CameraActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.squarecamera__CameraFullScreenTheme);
+        setTheme(R.style.easycamera__CameraFullScreenTheme);
         super.onCreate(savedInstanceState);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
-        setContentView(R.layout.squarecamera__activity_camera);
+        setContentView(R.layout.easycamera__activity_camera);
 
         if (savedInstanceState == null) {
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.fragment_container, NativeCameraFragment.newInstance(), EasyCameraPhotoFragment.TAG)
+                    .replace(R.id.fragment_container, NativeCameraFragment.newInstance(), NativeCameraFragment.class.getSimpleName())
                     .commit();
         }
     }

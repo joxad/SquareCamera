@@ -1,6 +1,7 @@
 package com.desmond.squarecamera;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,12 +16,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.List;
 
-public class NativeCameraFragment extends Fragment {
+public class NativeCamera2Fragment extends Fragment {
 
+    private static final String TAG = NativeCamera2Fragment.class.getSimpleName();
     // Native camera.
     private Camera mCamera;
 
@@ -33,7 +36,7 @@ public class NativeCameraFragment extends Fragment {
     /**
      * Default empty constructor.
      */
-    public NativeCameraFragment() {
+    public NativeCamera2Fragment() {
         super();
     }
 
@@ -42,8 +45,8 @@ public class NativeCameraFragment extends Fragment {
      *
      * @return
      */
-    public static NativeCameraFragment newInstance() {
-        NativeCameraFragment fragment = new NativeCameraFragment();
+    public static NativeCamera2Fragment newInstance() {
+        NativeCamera2Fragment fragment = new NativeCamera2Fragment();
         return fragment;
     }
 
@@ -58,7 +61,7 @@ public class NativeCameraFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.squarecamera__fragment_camera, container, false);
+        View view = inflater.inflate(R.layout.easycamera__fragment_camera_native, container, false);
 
         // Create our Preview view and set it as the content of our activity.
         boolean opened = safeCameraOpenInView(view);
@@ -74,7 +77,6 @@ public class NativeCameraFragment extends Fragment {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // get an image from the camera
                         mCamera.takePicture(null, null, pictureCallback);
                     }
                 }
@@ -150,7 +152,7 @@ public class NativeCameraFragment extends Fragment {
     /**
      * Surface on which the camera projects it's capture results. This is derived both from Google's docs and the
      * excellent StackOverflow answer provided below.
-     * <p/>
+     * <p>
      * Reference / Credit: http://stackoverflow.com/questions/7942378/android-camera-will-not-work-startpreview-fails
      */
     class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
@@ -178,19 +180,12 @@ public class NativeCameraFragment extends Fragment {
 
         public CameraPreview(Context context, Camera camera, View cameraView) {
             super(context);
-
-            // Capture the context
             mCameraView = cameraView;
             mContext = context;
             setCamera(camera);
-
-            // Install a SurfaceHolder.Callback so we get notified when the
-            // underlying surface is created and destroyed.
             mHolder = getHolder();
             mHolder.addCallback(this);
             mHolder.setKeepScreenOn(true);
-            // deprecated setting, but required on Android versions prior to 3.0
-            mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         }
 
         /**
@@ -222,7 +217,6 @@ public class NativeCameraFragment extends Fragment {
                 parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
                 mCamera.setParameters(parameters);
             }
-
             requestLayout();
         }
 
@@ -261,29 +255,57 @@ public class NativeCameraFragment extends Fragment {
         public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
             // If your preview can change or rotate, take care of those events here.
             // Make sure to stop the preview before resizing or reformatting it.
-
             if (mHolder.getSurface() == null) {
                 // preview surface does not exist
                 return;
             }
-
             // stop preview before making changes
             try {
                 Camera.Parameters parameters = mCamera.getParameters();
-
                 // Set the auto-focus mode to "continuous"
-                parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+                List<String> focusModes = parameters.getSupportedFocusModes();
 
                 // Preview size must exist.
                 if (mPreviewSize != null) {
                     Camera.Size previewSize = mPreviewSize;
                     parameters.setPreviewSize(previewSize.width, previewSize.height);
                 }
+                boolean manualAutoFocus = false;
 
+                if (focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
+                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+                else if (focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE))
+                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+                else {
+                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+                    manualAutoFocus = true;
+                }
                 mCamera.setParameters(parameters);
                 mCamera.startPreview();
+                if (manualAutoFocus) {
+                    cameraAutoFocus();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
+            }
+        }
+
+
+        private void cameraAutoFocus() {
+            if (mCamera != null) {
+                mCamera.cancelAutoFocus();
+                mCamera.autoFocus(new Camera.AutoFocusCallback() {
+                    @Override
+                    public void onAutoFocus(boolean success, Camera camera) {
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                cameraAutoFocus();
+                                Toast.makeText(getContext(), "Autofocus", Toast.LENGTH_SHORT).show();
+                            }
+                        }, 300);
+                    }
+                });
             }
         }
 
@@ -301,7 +323,28 @@ public class NativeCameraFragment extends Fragment {
             setMeasuredDimension(width, height);
 
             if (mSupportedPreviewSizes != null) {
-                mPreviewSize = getOptimalPreviewSize(mSupportedPreviewSizes, width, height);
+                Display display = ((WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+                boolean portrait = true;
+                switch (display.getRotation()) {
+                    case Surface.ROTATION_0:
+                        portrait = true;
+                        break;
+                    case Surface.ROTATION_90:
+                        portrait = false;
+                        break;
+                    case Surface.ROTATION_180:
+                        portrait = true;
+                        break;
+                    case Surface.ROTATION_270:
+                        portrait = false;
+                        break;
+                }
+                if (portrait) {
+                    mPreviewSize = getOptimalSize(mSupportedPreviewSizes, width, height);
+                } else {
+                    mPreviewSize = getOptimalSize(mSupportedPreviewSizes, height, width);
+
+                }
             }
         }
 
@@ -326,12 +369,11 @@ public class NativeCameraFragment extends Fragment {
 
                 if (mPreviewSize != null) {
                     Display display = ((WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-
+                    setCameraDisplayOrientation(display.getRotation(), 0, mCamera);
                     switch (display.getRotation()) {
                         case Surface.ROTATION_0:
                             previewWidth = mPreviewSize.height;
                             previewHeight = mPreviewSize.width;
-                            mCamera.setDisplayOrientation(90);
                             break;
                         case Surface.ROTATION_90:
                             previewWidth = mPreviewSize.width;
@@ -344,44 +386,83 @@ public class NativeCameraFragment extends Fragment {
                         case Surface.ROTATION_270:
                             previewWidth = mPreviewSize.width;
                             previewHeight = mPreviewSize.height;
-                            mCamera.setDisplayOrientation(180);
                             break;
                     }
                 }
 
+
                 final int scaledChildHeight = previewHeight * width / previewWidth;
+                Log.d(NativeCamera2Fragment.class.getSimpleName(), "ScaledChildHeight " + scaledChildHeight);
+
+                Log.d(NativeCamera2Fragment.class.getSimpleName(), "l Left position, relative to parent\n" + 0 +
+                        "     * @param t Top position, relative to parent\n" + (height - scaledChildHeight) +
+                        "     * @param r Right position, relative to parent\n" + width +
+                        "     * @param b Bottom position, relative to parent" + height);
                 mCameraView.layout(0, height - scaledChildHeight, width, height);
             }
         }
 
+        public void setCameraDisplayOrientation(int rotation,
+                                                int cameraId, Camera camera) {
+            Camera.CameraInfo info =
+                    new Camera.CameraInfo();
+            Camera.getCameraInfo(cameraId, info);
+            int degrees = 0;
+            switch (rotation) {
+                case Surface.ROTATION_0:
+                    degrees = 0;
+                    break;
+                case Surface.ROTATION_90:
+                    degrees = 90;
+                    break;
+                case Surface.ROTATION_180:
+                    degrees = 180;
+                    break;
+                case Surface.ROTATION_270:
+                    degrees = 270;
+                    break;
+            }
+
+            int result;
+            if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                result = (info.orientation + degrees) % 360;
+                result = (360 - result) % 360;  // compensate the mirror
+            } else {  // back-facing
+                result = (info.orientation - degrees + 360) % 360;
+            }
+            camera.setDisplayOrientation(result);
+        }
+
         /**
+         * Calculate the optimal size of camera preview
+         *
          * @param sizes
-         * @param width
-         * @param height
+         * @param w
+         * @param h
          * @return
          */
-        private Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int width, int height) {
-            final double ASPECT_TOLERANCE = 0.1;
-            double targetRatio = (double) height / width;
+        private Camera.Size getOptimalSize(List<Camera.Size> sizes, int w, int h) {
 
+
+            final double ASPECT_TOLERANCE = 0.2;
+            double targetRatio = (double) w / h;
             if (sizes == null)
                 return null;
-
             Camera.Size optimalSize = null;
             double minDiff = Double.MAX_VALUE;
-
-            int targetHeight = height;
-
+            int targetHeight = h;
+            // Try to find an size match aspect ratio and size
             for (Camera.Size size : sizes) {
-                double ratio = (double) size.height / size.width;
+//          Log.d("CameraActivity", "Checking size " + size.width + "w " + size.height + "h");
+                double ratio = (double) size.width / size.height;
                 if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE)
                     continue;
-
                 if (Math.abs(size.height - targetHeight) < minDiff) {
                     optimalSize = size;
                     minDiff = Math.abs(size.height - targetHeight);
                 }
             }
+            // Cannot find the one match the aspect ratio, ignore the requirement
 
             if (optimalSize == null) {
                 minDiff = Double.MAX_VALUE;
@@ -393,8 +474,11 @@ public class NativeCameraFragment extends Fragment {
                 }
             }
 
+
+//      Log.d("CameraActivity", "Using size: " + optimalSize.width + "w " + optimalSize.height + "h");
             return optimalSize;
         }
+
     }
 
     Handler handler = new Handler();
@@ -430,7 +514,8 @@ public class NativeCameraFragment extends Fragment {
                             break;
                         }
                     }
-                    PictureManager.save(getContext(), data, degrees);
+                    Bitmap bitmap = ImageUtility.rotatePicture(getContext(), degrees, data);
+                    ImageUtility.savePicture(getContext(), bitmap);
                 }
             });
             camera.startPreview();

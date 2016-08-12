@@ -54,7 +54,7 @@ public class RuntimePermissionActivity extends AppCompatActivity {
         final ArrayList<String> permissionRationaleNeeded = getPermissionRationaleNeeded(permissionsNeeded);
 
         if (!permissionRationaleNeeded.isEmpty()) {
-            String message = getString(R.string.squarecamera__request_write_storage_permission_text);
+            String message = getString(R.string.easycamera__request_write_storage_permission_text);
             for (int i = 1; i < permissionRationaleNeeded.size(); ++i) {
                 message += ", " + permissionRationaleNeeded.get(i);
             }
